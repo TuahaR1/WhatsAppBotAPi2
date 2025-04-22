@@ -1,35 +1,54 @@
-﻿using WhatsAppBotAPi.Services.Configurations;
+﻿using System.Text.Json.Serialization;
+using WhatsAppBotAPi.Services.Configurations;
 using WhatsAppBotAPi.Services.Extensions;
-using WhatsAppBotAPi.Services.Interfaces;
-using WhatsAppBotAPi.Services.WhatsAppBusinessManager; // ✅ Needed for AddWhatsAppBotAPiService
+
 
 var builder = WebApplication.CreateBuilder(args);
-// You can configure logging providers if needed
-builder.Logging.ClearProviders();
-builder.Logging.AddConsole();
-// Add services to the container.
-builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-// Load WhatsApp config from appsettings.json
-var whatsAppConfig = builder.Configuration
-    .GetSection("WhatsAppConfiguration")
-    .Get<WhatsAppConfig>();
 
-// Register WhatsApp Cloud API service
+// Add services to the container.
+builder.Services.AddControllersWithViews().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.WriteIndented = true;
+    options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+});
+
+builder.Services.Configure<WhatsAppConfig>(options =>
+{
+    builder.Configuration.GetSection("WhatsAppBusinessCloudApiConfiguration").Bind(options);
+});
+
+WhatsAppConfig whatsAppConfig = new WhatsAppConfig();
+whatsAppConfig.WhatsAppBusinessPhoneNumberId = builder.Configuration.GetSection("WhatsAppBusinessCloudApiConfiguration")["WhatsAppBusinessPhoneNumberId"];
+whatsAppConfig.AppID = builder.Configuration.GetSection("WhatsAppBusinessCloudApiConfiguration")["AppID"];
+whatsAppConfig.WhatsAppBusinessId = builder.Configuration.GetSection("WhatsAppBusinessCloudApiConfiguration")["WhatsAppBusinessId"];
+whatsAppConfig.AccessToken = builder.Configuration.GetSection("WhatsAppBusinessCloudApiConfiguration")["AccessToken"];
+whatsAppConfig.AppName = builder.Configuration.GetSection("WhatsAppBusinessCloudApiConfiguration")["AppName"];
+whatsAppConfig.Version = builder.Configuration.GetSection("WhatsAppBusinessCloudApiConfiguration")["ApiVersion"];
+whatsAppConfig.BaseUrl = builder.Configuration.GetSection("WhatsAppBusinessCloudApiConfiguration")["BaseUrl"];
+whatsAppConfig.MyWhatsappNo = builder.Configuration.GetSection("WhatsAppBusinessCloudApiConfiguration")["MyWhatsappNo"];
+whatsAppConfig.MyAccessToken = builder.Configuration.GetSection("WhatsAppBusinessCloudApiConfiguration")["MyAccessToken"];
+
 builder.Services.AddWhatsAppBotAPiService(whatsAppConfig);
 
-builder.Services.AddScoped<IWhatsAppBussinesManager, WhatsAppBusinessManager>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+if (!app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseExceptionHandler("/Home/Error");
+    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+    app.UseHsts();
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
+
+app.UseRouting();
+
 app.UseAuthorization();
-app.MapControllers();
+
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
+
 app.Run();

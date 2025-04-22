@@ -4,6 +4,11 @@
     <TargetFramework>net6.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <RuntimeIdentifiers>win10-x64</RuntimeIdentifiers>
+    <ContainerRuntimeIdentifier>win10-x64</ContainerRuntimeIdentifier>
+    <EnableSdkContainerDebugging>True</EnableSdkContainerDebugging>
+    <ContainerBaseImage>mcr.microsoft.com/dotnet/aspnet:6.0</ContainerBaseImage>
+    <UserSecretsId>d93f58cb-8be8-4617-8731-ff5d8976d53b</UserSecretsId>
   
   </PropertyGroup>
 
@@ -13,7 +18,7 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.2" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="6.0.1" />
     <PackageReference Include="Microsoft.Extensions.Http.Polly" Version="6.0.36" />
-    <PackageReference Include="System.Text.Json" Version="6.0.1" />
+    <PackageReference Include="System.Text.Json" Version="6.0.36" />
   </ItemGroup>
 
 
@@ -22,6 +27,14 @@
 
   <ItemGroup>
     <Folder Include="Services\" />
+  </ItemGroup>
+
+
+
+
+
+  <ItemGroup>
+    <ContainerPort Include="443" />
   </ItemGroup>
 
 </Project>
