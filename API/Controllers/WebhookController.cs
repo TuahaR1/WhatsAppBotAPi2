@@ -1,84 +1,64 @@
 using Microsoft.AspNetCore.Mvc;
-using System.Net.Http.Headers;
-using WhatsAppBotAPi.Services.Configurations;
-using WhatsAppBotAPi.Services.Interfaces;
-using WhatsAppBotAPi.Services.SendMessageTemplate;
-
+using System.Text.Json;
 namespace WhatsAppBotAPi.Controllers.Webhook
 {
     [ApiController]
     [Route("webhook")]
-    public class WebhookController : ControllerBase
-    {
-        static readonly HttpClient client = new HttpClient();
 
+    public class WhatsAppWebhookController : ControllerBase
+    {
+        private readonly ILogger<WhatsAppWebhookController> _logger;
         private readonly IConfiguration _configuration;
-        private readonly IWhatsAppBussinesManager _whatsAppBusinessManager;
-        private readonly WhatsAppConfig _waConfig;
-        public WebhookController(IConfiguration configuration, IWhatsAppBussinesManager _whatsAppBusinessManager)
+        // Replace with your verify token used during webhook setup
+
+        public WhatsAppWebhookController(ILogger<WhatsAppWebhookController> logger, IConfiguration configuration)
         {
             _configuration = configuration;
-            _whatsAppBusinessManager = _whatsAppBusinessManager;
-            _waConfig = new WhatsAppConfig();
-            _configuration.GetSection("WhatsAppBusinessCloudApiConfiguration").Bind(_waConfig);
-
-            // Setup the HttpClient headers
-            client.DefaultRequestHeaders.Accept.Clear();
-            client.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", _waConfig.AccessToken);
-            client
-                .DefaultRequestHeaders
-                .Accept
-                .Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            _logger = logger;
         }
 
+        // Webhook verification (GET)
         [HttpGet]
-        public IActionResult GetWebHook(
-  [FromQuery(Name = "hub.mode")] string mode,
-  [FromQuery(Name = "hub.verify_token")] string token,
-  [FromQuery(Name = "hub.challenge")] string challenge)
+        public IActionResult Get([FromQuery(Name = "hub.mode")] string mode,
+                                 [FromQuery(Name = "hub.verify_token")] string token,
+                                 [FromQuery(Name = "hub.challenge")] string challenge)
         {
-            string VERIFY_TOKEN = _waConfig.MyAccessToken;  //"apple"; // Replace with your own token
-
-            if (mode == "subscribe" && token == VERIFY_TOKEN)
+            if (mode == "subscribe" && token == "Apple")
             {
-                return Ok(challenge); // Facebook will accept this
+                _logger.LogInformation("WEBHOOK_VERIFIED");
+                return Ok(challenge);
             }
-
-            return Forbid(); // 403 if token mismatch
-        }
-
-
-
-        private string GetUrl()
-        {
-            // Example: https://graph.facebook.com/v13.0/10938439232/messages
-            return $"{_waConfig.BaseUrl}/{_waConfig.Version}/{_waConfig.AppID}/messages";
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> ReceiveMessage([FromBody] dynamic incomingMessage)
-        {
-            // Extract message data
-            string from = incomingMessage.entry[0].changes[0].value.messages[0].from;
-            string messageText = incomingMessage.entry[0].changes[0].value.messages[0].text?.body;
-
-            if (!string.IsNullOrEmpty(messageText) && messageText.Trim().ToLower() == "hi")
+            else
             {
-                // Call your method to send a template
-                await _whatsAppBusinessManager.SendFirstTemplateMessageAsync(new SendWhatsAppPizzaPayload
-                {
-                    ToNum = from,
-                    TemplateName = "send_catalog_2", // or whatever your template is
-                    ItemName = "Pizza",
-                    ItemPrice = 500,
-                    ItemDate = DateTime.UtcNow,
-                    ItemImage = "https://your-image-link.jpg"
-                });
+                return Forbid();
+            }
+        }
+
+        // Webhook message handler (POST)
+        [HttpPost]
+        public IActionResult Post([FromBody] JsonElement body)
+        {
+            _logger.LogInformation("Received webhook: {WebhookBody}", body.ToString());
+
+            // You can parse the JSON manually or create a model based on WhatsApp Webhook structure
+            // Here's an example of checking for a new message:
+            var entry = body.GetProperty("entry")[0];
+            var changes = entry.GetProperty("changes")[0];
+            var value = changes.GetProperty("value");
+
+            if (value.TryGetProperty("messages", out var messages))
+            {
+                var message = messages[0];
+                var from = message.GetProperty("from").GetString();
+                var text = message.GetProperty("text").GetProperty("body").GetString();
+
+                _logger.LogInformation($"Incoming message from {from}: {text}");
+
+                // You can respond to this message using WhatsApp Cloud API
             }
 
             return Ok();
         }
-
     }
+
 }
