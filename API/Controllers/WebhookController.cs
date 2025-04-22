@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
+using WhatsAppBotAPi.Services.Interfaces;
+using WhatsAppBotAPi.Services.SendMessageTemplate;
 namespace WhatsAppBotAPi.Controllers.Webhook
 {
     [ApiController]
@@ -9,13 +11,14 @@ namespace WhatsAppBotAPi.Controllers.Webhook
     {
         private readonly ILogger<WhatsAppWebhookController> _logger;
         private readonly IConfiguration _configuration;
-        
+        private readonly IWhatsAppBussinesManager _whatsAppBussinesManager;
         // Replace with your verify token used during webhook setup
 
-        public WhatsAppWebhookController(ILogger<WhatsAppWebhookController> logger, IConfiguration configuration)
+        public WhatsAppWebhookController(ILogger<WhatsAppWebhookController> logger, IConfiguration configuration, IWhatsAppBussinesManager whatsAppBussinesManager)
         {
             _configuration = configuration;
             _logger = logger;
+            _whatsAppBussinesManager = whatsAppBussinesManager;
         }
 
         // Webhook verification (GET)
@@ -25,7 +28,7 @@ namespace WhatsAppBotAPi.Controllers.Webhook
                                  [FromQuery(Name = "hub.challenge")] string challenge)
         {
             string verifyToken = _configuration.GetValue<string>("WhatsAppBusinessCloudApiConfiguration:MyAccessToken");
-            if (mode == "subscribe" && token == "Apple")
+            if (mode == "subscribe" && token == verifyToken)
             {
                 _logger.LogInformation("WEBHOOK_VERIFIED");
                 return Ok(challenge);
@@ -38,29 +41,68 @@ namespace WhatsAppBotAPi.Controllers.Webhook
 
         // Webhook message handler (POST)
         [HttpPost]
-        public IActionResult Post([FromBody] JsonElement body)
+        [HttpPost]
+        public IActionResult Post([FromBody] WebhookEvent body)
         {
             _logger.LogInformation("Received webhook: {WebhookBody}", body.ToString());
-
-            // You can parse the JSON manually or create a model based on WhatsApp Webhook structure
-            // Here's an example of checking for a new message:
-            var entry = body.GetProperty("entry")[0];
-            var changes = entry.GetProperty("changes")[0];
-            var value = changes.GetProperty("value");
-
-            if (value.TryGetProperty("messages", out var messages))
+            try
             {
-                var message = messages[0];
-                var from = message.GetProperty("from").GetString();
-                var text = message.GetProperty("text").GetProperty("body").GetString();
+                var message = body.Entry[0].Changes[0].Value.Messages[0];
+                var from = message.From;
+                var text = message.Text.Body;
 
+                SendWhatsAppPizzaPayload req = new SendWhatsAppPizzaPayload
+                {
+                    ItemDate = DateTime.Now,
+                    ItemImage = "https://images.unsplash.com/photo-1568901346375-23c9450c58cd",
+                    ItemName = "Buger With Cheezs",
+                    ItemPrice = 500,
+                    TemplateName = "send_prop2",
+                    ToNum = from
+                };
+
+                _whatsAppBussinesManager.SendFirstTemplateMessageAsync(req);
                 _logger.LogInformation($"Incoming message from {from}: {text}");
 
-                // You can respond to this message using WhatsApp Cloud API
+                return Ok();
             }
-
-            return Ok();
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing webhook");
+                return BadRequest(ex.Message);
+            }
         }
     }
+    public class WebhookEvent
+    {
+        public List<WebhookEntry> Entry { get; set; }
+    }
+
+    public class WebhookEntry
+    {
+        public List<WebhookChange> Changes { get; set; }
+    }
+
+    public class WebhookChange
+    {
+        public WebhookValue Value { get; set; }
+    }
+
+    public class WebhookValue
+    {
+        public List<WebhookMessage> Messages { get; set; }
+    }
+
+    public class WebhookMessage
+    {
+        public string From { get; set; }
+        public WebhookMessageText Text { get; set; }
+    }
+
+    public class WebhookMessageText
+    {
+        public string Body { get; set; }
+    }
+
 
 }
