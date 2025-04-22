@@ -1,17 +1,19 @@
-﻿using System.Text.Json.Serialization;
+﻿using Microsoft.OpenApi.Models;
+using System.Text.Json.Serialization;
 using WhatsAppBotAPi.Services.Configurations;
 using WhatsAppBotAPi.Services.Extensions;
 
-
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-builder.Services.AddControllersWithViews().AddJsonOptions(options =>
-{
-    options.JsonSerializerOptions.WriteIndented = true;
-    options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
-});
+// Add services to the container for Web API.
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.WriteIndented = true;
+        options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+    });
 
+// Configure WhatsApp Bot API service
 builder.Services.Configure<WhatsAppConfig>(options =>
 {
     builder.Configuration.GetSection("WhatsAppBusinessCloudApiConfiguration").Bind(options);
@@ -30,25 +32,28 @@ whatsAppConfig.MyAccessToken = builder.Configuration.GetSection("WhatsAppBusines
 
 builder.Services.AddWhatsAppBotAPiService(whatsAppConfig);
 
+// Add Swagger for API documentation
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "WhatsApp Bot API", Version = "v1" });
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (!app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    app.UseHsts();
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "WhatsApp Bot API v1");
+    });
 }
 
 app.UseHttpsRedirection();
-app.UseStaticFiles();
-
-app.UseRouting();
-
 app.UseAuthorization();
 
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+app.MapControllers(); // Map Web API controllers
 
 app.Run();
