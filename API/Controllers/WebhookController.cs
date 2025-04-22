@@ -9,6 +9,7 @@ namespace WhatsAppBotAPi.Controllers.Webhook
     {
         private readonly ILogger<WhatsAppWebhookController> _logger;
         private readonly IConfiguration _configuration;
+        
         // Replace with your verify token used during webhook setup
 
         public WhatsAppWebhookController(ILogger<WhatsAppWebhookController> logger, IConfiguration configuration)
@@ -23,6 +24,7 @@ namespace WhatsAppBotAPi.Controllers.Webhook
                                  [FromQuery(Name = "hub.verify_token")] string token,
                                  [FromQuery(Name = "hub.challenge")] string challenge)
         {
+            string verifyToken = _configuration.GetValue<string>("WhatsAppBusinessCloudApiConfiguration:MyAccessToken");
             if (mode == "subscribe" && token == "Apple")
             {
                 _logger.LogInformation("WEBHOOK_VERIFIED");
