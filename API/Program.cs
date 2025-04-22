@@ -2,6 +2,8 @@
 using System.Text.Json.Serialization;
 using WhatsAppBotAPi.Services.Configurations;
 using WhatsAppBotAPi.Services.Extensions;
+using WhatsAppBotAPi.Services.Interfaces;
+using WhatsAppBotAPi.Services.WhatsAppBusinessManager;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,7 +33,7 @@ whatsAppConfig.MyWhatsappNo = builder.Configuration.GetSection("WhatsAppBusiness
 whatsAppConfig.MyAccessToken = builder.Configuration.GetSection("WhatsAppBusinessCloudApiConfiguration")["MyAccessToken"];
 
 builder.Services.AddWhatsAppBotAPiService(whatsAppConfig);
-
+builder.Services.AddScoped<IWhatsAppBussinesManager, WhatsAppBusinessManager>();
 // Add Swagger for API documentation
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
