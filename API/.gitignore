@@ -1,0 +1,14 @@
+################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs
+/out
+/WhatsAppBotAPi/bin/Release/net6.0
+/WhatsAppBotAPi.Services/obj
+/WhatsAppBotAPi.Services/bin
+/WhatsAppBotAPi.Services/bin/Release/net6.0/WhatsAppBotAPi.Services.deps.json
+*.dll
+/WhatsAppBotAPi.Services/bin/Release/net6.0/WhatsAppBotAPi.Services.pdb
+/WhatsAppBotAPi/bin
+/WhatsAppBotAPi/obj
