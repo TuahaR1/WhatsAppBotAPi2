@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 using WhatsAppBotAPi.Services.Interfaces;
@@ -6,7 +7,7 @@ namespace WhatsAppBotAPi.Controllers.Webhook
 {
     [ApiController]
     [Route("webhook")]
-
+    [AllowAnonymous]
     public class WhatsAppWebhookController : ControllerBase
     {
         private readonly ILogger<WhatsAppWebhookController> _logger;
