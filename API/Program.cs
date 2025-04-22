@@ -54,6 +54,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseAuthentication();  // Must be called before UseAuthorization
+
 app.UseAuthorization();
 
 app.MapControllers(); // Map Web API controllers
