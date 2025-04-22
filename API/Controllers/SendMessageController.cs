@@ -25,7 +25,7 @@ namespace whatsappbotApi.Controllers
             _configuration = configuration;
             _whatsAppBusinessManager = whatsAppBussinesManager;
             _waConfig = new WhatsAppConfig();
-            _configuration.GetSection("WhatsApp").Bind(_waConfig);
+            _configuration.GetSection("WhatsAppBusinessCloudApiConfiguration").Bind(_waConfig);
             _whatsAppBusinessClient = whatsAppBusinessClient;
             _httpClient = new HttpClient();
             _httpClient.DefaultRequestHeaders.Authorization =

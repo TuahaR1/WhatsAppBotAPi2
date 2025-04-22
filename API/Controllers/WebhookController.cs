@@ -20,7 +20,7 @@ namespace WhatsAppBotAPi.Controllers.Webhook
             _configuration = configuration;
             _whatsAppBusinessManager = _whatsAppBusinessManager;
             _waConfig = new WhatsAppConfig();
-            _configuration.GetSection("WhatsApp").Bind(_waConfig);
+            _configuration.GetSection("WhatsAppBusinessCloudApiConfiguration").Bind(_waConfig);
 
             // Setup the HttpClient headers
             client.DefaultRequestHeaders.Accept.Clear();
