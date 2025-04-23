@@ -22,6 +22,7 @@ namespace WhatsAppBotAPi.Services.WhatsAppBusinessManager
             var imageTemplateMessage = new ImageTemplateMessageRequest
             {
                 To = payload.ToNum,
+               
                 Template = new ImageMessageTemplate
                 {
                     Name = payload.TemplateName,
