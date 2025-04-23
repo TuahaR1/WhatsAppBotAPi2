@@ -48,13 +48,14 @@ namespace WhatsAppBotAPi.Controllers.Webhook
                 var from = message.From;
                 var text = message.Text.Body;
 
-                SendWhatsAppPizzaPayload req = new SendWhatsAppPizzaPayload
+                SendWhatsAppPayload2 req = new SendWhatsAppPayload2
                 {
                     ItemDate = DateTime.Now,
+                    Name = "Users",
                     ItemImage = "https://images.unsplash.com/photo-1568901346375-23c9450c58cd",
                     ItemName = "Buger With Cheezs",
                     ItemPrice = 500,
-                    TemplateName = "send_prop2",
+                    TemplateName = "send_food_ordering",
                     ToNum = from,
                             
                 };

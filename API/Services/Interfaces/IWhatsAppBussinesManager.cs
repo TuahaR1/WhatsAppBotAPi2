@@ -11,6 +11,7 @@ namespace WhatsAppBotAPi.Services.Interfaces
     public interface IWhatsAppBussinesManager
     {
         Task<WhatsAppResponse> SendFirstTemplateMessageAsync(SendWhatsAppPizzaPayload payload);
+        Task<WhatsAppResponse> SendFirstTemplateMessageAsync(SendWhatsAppPayload2 payload);
 
     }
 }
