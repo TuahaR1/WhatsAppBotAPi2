@@ -39,7 +39,6 @@ namespace WhatsAppBotAPi.Controllers.Webhook
 
         // Webhook message handler (POST)
         [HttpPost]
-        [HttpPost]
         public IActionResult Post([FromBody] WebhookEvent body)
         {
             _logger.LogInformation("Received webhook: {WebhookBody}", body.ToString());
@@ -56,7 +55,8 @@ namespace WhatsAppBotAPi.Controllers.Webhook
                     ItemName = "Buger With Cheezs",
                     ItemPrice = 500,
                     TemplateName = "send_prop2",
-                    ToNum = from
+                    ToNum = from,
+                            
                 };
 
                 _whatsAppBussinesManager.SendFirstTemplateMessageAsync(req);
