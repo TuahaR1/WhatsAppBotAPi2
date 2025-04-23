@@ -371,6 +371,12 @@ namespace whatsappbotApi.Controllers
         {
             return await _whatsAppBusinessManager.SendFirstTemplateMessageAsync(payload);
         }
+        [HttpPost]
+        [Route("SendOrderTemplateImage")]
+        public async Task<ActionResult<WhatsAppResponse>> SendOrderTemplateImage(SendWhatsAppPayload2 payload)
+        {
+            return await _whatsAppBusinessManager.SendFirstTemplateMessageAsync(payload);
+        }
 
 
     }

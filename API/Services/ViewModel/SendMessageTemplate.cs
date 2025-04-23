@@ -103,4 +103,9 @@ namespace WhatsAppBotAPi.Services.SendMessageTemplate
         public long ItemPrice { get; set; }
         public DateTime ItemDate { get; set; }
     }
+	public class SendWhatsAppPayload2: SendWhatsAppPizzaPayload
+    {
+        public string  Name { get; set; }
+    }
+
 }
